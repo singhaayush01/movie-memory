@@ -33,6 +33,7 @@ function writeFactCache(key: string, value: CachedFact) {
 
 export function DashboardClient({ userId, name, email, image, initialMovie }: Props) {
   const [favoriteMovie, setFavoriteMovie] = useState(initialMovie);
+  const favoriteMovieRef = useRef(initialMovie);
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(initialMovie);
   const [saving, setSaving] = useState(false);
@@ -46,7 +47,7 @@ export function DashboardClient({ userId, name, email, image, initialMovie }: Pr
     const requestId = ++activeFactRequest.current;
 
     if (!forceNew) {
-      const cached = readFactCache(cacheKey, favoriteMovie);
+      const cached = readFactCache(cacheKey, favoriteMovieRef.current);
       if (cached) {
         setFact(cached.value);
         setFactError("");
@@ -68,9 +69,14 @@ export function DashboardClient({ userId, name, email, image, initialMovie }: Pr
     } finally {
       if (requestId === activeFactRequest.current) setFactLoading(false);
     }
-  }, [cacheKey, favoriteMovie]);
+  }, [cacheKey]);
 
   useEffect(() => { void loadFact(); }, [loadFact]);
+
+  function updateFavoriteMovie(movie: string) {
+    favoriteMovieRef.current = movie;
+    setFavoriteMovie(movie);
+  }
 
   async function handleSave() {
     const nextMovie = draft.trim();
@@ -80,7 +86,7 @@ export function DashboardClient({ userId, name, email, image, initialMovie }: Pr
       await saveMovieOptimistically(
         favoriteMovie, nextMovie,
         async (movie) => (await updateMovie(movie)).favoriteMovie,
-        setFavoriteMovie
+        updateFavoriteMovie
       );
       setEditing(false);
       try { sessionStorage.removeItem(cacheKey); } catch { /* Storage may be disabled. */ }
