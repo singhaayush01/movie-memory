@@ -155,7 +155,7 @@ I chose Variant B because it puts the focus on the API contract and how the fron
 - **Fact cache:** the dashboard keeps the last fact and the time it was received in React state. A fact is reused for 30 seconds. The "Give me another fact" button bypasses that cache.
 - **Cache invalidation:** after a movie update succeeds, the old fact and its timestamp are cleared so the next fact is about the updated movie.
 
-The cache is intentionally in-memory and scoped to the mounted dashboard. A full browser refresh starts with an empty cache. This keeps the implementation small and makes the 30-second rule easy to see and test.
+The cache is intentionally scoped to the current browser tab and user. It is cleared after the movie is changed, and a new fact request bypasses it. This keeps the implementation small without adding a data-fetching library.
 
 ## Security and Validation
 
