@@ -10,7 +10,7 @@ Sign in with Google, add the movie you always come back to, and it will be saved
 |---|---|
 | Frontend | Next.js App Router, React, TypeScript |
 | Styling | Tailwind CSS |
-| Authentication | Google OAuth with NextAuth |
+| Authentication | Google OAuth with Auth.js |
 | Database | PostgreSQL |
 | ORM | Prisma |
 | AI | OpenAI API |
@@ -56,8 +56,8 @@ Fill in the values:
 | `DATABASE_URL` | PostgreSQL connection string |
 | `GOOGLE_CLIENT_ID` | Google OAuth client ID |
 | `GOOGLE_CLIENT_SECRET` | Google OAuth client secret |
-| `NEXTAUTH_SECRET` | Secret used to sign/encrypt NextAuth data |
-| `NEXTAUTH_URL` | App URL, normally `http://localhost:3000` locally |
+| `AUTH_SECRET` | Secret used to sign/encrypt Auth.js data |
+| `AUTH_URL` | App URL, normally `http://localhost:3000` locally |
 | `OPENAI_API_KEY` | Server-side OpenAI API key |
 | `OPENAI_MODEL` | Optional model name; defaults to `gpt-4o-mini` |
 
@@ -86,7 +86,7 @@ npx prisma generate
 npx prisma migrate dev
 ```
 
-The initial migration is included under `prisma/migrations`. To apply committed migrations in a deployment environment, use:
+This project uses Prisma 7 with the PostgreSQL driver adapter. The connection URL is read from `prisma.config.ts`, and the generated client is written to `generated/prisma`. The initial migration is included under `prisma/migrations`. To apply committed migrations in a deployment environment, use:
 
 ```bash
 npx prisma migrate deploy
@@ -121,7 +121,7 @@ PostgreSQL <---------+
 
 ### Authentication and user data
 
-NextAuth handles Google OAuth and uses the Prisma adapter to save the user, linked Google account, and database session. Protected pages and API routes call Auth.js `auth()` before reading or changing user data.
+Auth.js handles Google OAuth and uses the Prisma adapter to save the user, linked Google account, and database session. Protected pages and API routes call Auth.js `auth()` before reading or changing user data.
 
 The `User` record contains the user's `favoriteMovie`. The `Fact` table stores generated facts with the owning user ID and the movie title used to generate each fact. A fact is always created with the authenticated session's user ID; the API does not accept a user ID from the browser.
 
@@ -152,7 +152,7 @@ I chose Variant B because it puts the focus on the API contract and how the fron
 
 - **Typed API layer:** request and response types live in `lib/api.ts`. Requests use the same credentials, JSON headers, and error handling.
 - **Optimistic edit:** when Save is clicked, the dashboard displays the new title immediately. If the request fails, `saveMovieOptimistically` restores the previous title.
-- **Fact cache:** the dashboard keeps the last fact and the time it was received in React state. A fact is reused for 30 seconds. The "Give me another fact" button bypasses that cache.
+- **Fact cache:** the dashboard keeps the last fact and its timestamp in session storage, keyed to the signed-in user. A matching fact is reused for 30 seconds, including after a refresh in the same tab. The "Give me another fact" button bypasses that cache.
 - **Cache invalidation:** after a movie update succeeds, the old fact and its timestamp are cleared so the next fact is about the updated movie.
 
 The cache is intentionally scoped to the current browser tab and user. It is only reused when it belongs to the currently saved movie, is less than 30 seconds old, and has a valid timestamp. It is cleared after the movie is changed, and a new fact request bypasses it. A request counter also prevents an older fact response from replacing the result for a newer movie.
@@ -185,9 +185,9 @@ npm run typecheck
 
 ## AI Usage
 
-- I used AI assistance to review the requirements and plan the project structure.
-- I used it to help draft and review parts of the implementation and tests.
-- I reviewed the code and README and will verify the setup and behavior locally before submission.
+- AI assistance was used to map the assignment requirements to the project structure and implementation plan.
+- AI assistance was also used to draft and review parts of the implementation, tests, and documentation.
+- I will verify the setup and behavior locally with my own Google OAuth, database, and OpenAI credentials before submission.
 
 ## Tradeoffs and Next Steps
 
