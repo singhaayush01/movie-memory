@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { auth } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
@@ -13,7 +14,7 @@ export default async function HomePage() {
   return (
     <main className="min-h-screen px-6 py-8 sm:px-10">
       <nav className="mx-auto flex max-w-6xl items-center justify-between">
-        <a href="/" className="text-sm font-bold tracking-tight">movie memory<span className="text-lime-600">.</span></a>
+        <Link href="/" className="text-sm font-bold tracking-tight">movie memory<span className="text-lime-600">.</span></Link>
         <span className="text-xs text-muted">A little space for your favorite films</span>
       </nav>
       <section className="mx-auto grid min-h-[82vh] max-w-6xl items-center gap-14 py-16 md:grid-cols-[1.05fr_.95fr]">
