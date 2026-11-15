@@ -6,9 +6,11 @@ describe("apiRequest error handling", () => {
   afterEach(() => { vi.unstubAllGlobals(); });
 
   it("turns a 401 response into a typed ApiError", async () => {
-    vi.mocked(fetch).mockResolvedValue(new Response(JSON.stringify({ error: { code: "UNAUTHORIZED", message: "Please sign in." } }), {
-      status: 401, headers: { "Content-Type": "application/json" }
-    }));
+    vi.mocked(fetch).mockResolvedValue(new Response(
+      JSON.stringify({ error: { code: "UNAUTHORIZED", message: "Please sign in." } }),
+      { status: 401, headers: { "Content-Type": "application/json" } }
+    ));
+
     await expect(apiRequest("/api/me")).rejects.toMatchObject({
       name: "ApiError", status: 401, code: "UNAUTHORIZED", message: "Please sign in."
     });
@@ -16,9 +18,12 @@ describe("apiRequest error handling", () => {
 
   it("normalizes a server error when the response body is not JSON", async () => {
     vi.mocked(fetch).mockResolvedValue(new Response("not json", { status: 500 }));
-    await expect(apiRequest("/api/fact")).rejects.toBeInstanceOf(ApiError);
+
     await expect(apiRequest("/api/fact")).rejects.toMatchObject({
-      status: 500, code: "UNKNOWN_ERROR", message: "Something went wrong. Please try again."
+      name: "ApiError",
+      status: 500,
+      code: "UNKNOWN_ERROR",
+      message: "Something went wrong. Please try again."
     });
   });
 });
