@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import { signOut } from "next-auth/react";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { ApiError, getFact, updateMovie, type FactResponse } from "@/lib/api";
 import { saveMovieOptimistically } from "@/lib/movie-edit";
 
@@ -10,16 +10,19 @@ const FACT_CACHE_MS = 30_000;
 type Props = { userId: string; name: string | null; email: string | null; image: string | null; initialMovie: string };
 type CachedFact = { value: FactResponse; cachedAt: number };
 
-function readFactCache(key: string): CachedFact | null {
+function readFactCache(key: string, movie: string): CachedFact | null {
   try {
     const stored = sessionStorage.getItem(key);
     if (!stored) return null;
     const cached = JSON.parse(stored) as CachedFact;
-    const isValid = Boolean(cached.value?.fact) && Number.isFinite(cached.cachedAt);
+    const isValid =
+      Boolean(cached.value?.fact) &&
+      cached.value.movie === movie &&
+      Number.isFinite(cached.cachedAt);
     if (isValid && Date.now() >= cached.cachedAt && Date.now() - cached.cachedAt < FACT_CACHE_MS) return cached;
     sessionStorage.removeItem(key);
   } catch {
-    sessionStorage.removeItem(key);
+    // Storage can be unavailable or contain invalid JSON. In that case, fetch a fresh fact.
   }
   return null;
 }
@@ -37,10 +40,13 @@ export function DashboardClient({ userId, name, email, image, initialMovie }: Pr
   const cacheKey = "movie-memory:fact:" + userId;
   const [factLoading, setFactLoading] = useState(true);
   const [factError, setFactError] = useState("");
+  const activeFactRequest = useRef(0);
 
   const loadFact = useCallback(async (forceNew = false) => {
+    const requestId = ++activeFactRequest.current;
+
     if (!forceNew) {
-      const cached = readFactCache(cacheKey);
+      const cached = readFactCache(cacheKey, favoriteMovie);
       if (cached) {
         setFact(cached.value);
         setFactError("");
@@ -53,14 +59,16 @@ export function DashboardClient({ userId, name, email, image, initialMovie }: Pr
     setFactError("");
     try {
       const result = await getFact();
+      if (requestId !== activeFactRequest.current) return;
       writeFactCache(cacheKey, { value: result, cachedAt: Date.now() });
       setFact(result);
     } catch (error) {
+      if (requestId !== activeFactRequest.current) return;
       setFactError(error instanceof ApiError ? error.message : "Could not load a movie fact.");
     } finally {
-      setFactLoading(false);
+      if (requestId === activeFactRequest.current) setFactLoading(false);
     }
-  }, [cacheKey]);
+  }, [cacheKey, favoriteMovie]);
 
   useEffect(() => { void loadFact(); }, [loadFact]);
 
