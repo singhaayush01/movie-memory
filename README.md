@@ -39,7 +39,7 @@ git checkout variant-b-implementation
 npm install
 ```
 
-Use Node.js 20.9 or newer.
+Use Node.js 20.19 or newer.
 
 ### 2. Configure environment variables
 
