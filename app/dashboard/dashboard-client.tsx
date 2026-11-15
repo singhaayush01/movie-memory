@@ -7,38 +7,60 @@ import { ApiError, getFact, updateMovie, type FactResponse } from "@/lib/api";
 import { saveMovieOptimistically } from "@/lib/movie-edit";
 
 const FACT_CACHE_MS = 30_000;
-type Props = { name: string | null; email: string | null; image: string | null; initialMovie: string };
+type Props = { userId: string; name: string | null; email: string | null; image: string | null; initialMovie: string };
 type CachedFact = { value: FactResponse; cachedAt: number };
 
-export function DashboardClient({ name, email, image, initialMovie }: Props) {
+function readFactCache(key: string): CachedFact | null {
+  try {
+    const stored = sessionStorage.getItem(key);
+    if (!stored) return null;
+    const cached = JSON.parse(stored) as CachedFact;
+    const isValid = Boolean(cached.value?.fact) && Number.isFinite(cached.cachedAt);
+    if (isValid && Date.now() >= cached.cachedAt && Date.now() - cached.cachedAt < FACT_CACHE_MS) return cached;
+    sessionStorage.removeItem(key);
+  } catch {
+    sessionStorage.removeItem(key);
+  }
+  return null;
+}
+
+function writeFactCache(key: string, value: CachedFact) {
+  try { sessionStorage.setItem(key, JSON.stringify(value)); } catch { /* Storage may be disabled. */ }
+}
+
+export function DashboardClient({ userId, name, email, image, initialMovie }: Props) {
   const [favoriteMovie, setFavoriteMovie] = useState(initialMovie);
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(initialMovie);
   const [saving, setSaving] = useState(false);
   const [fact, setFact] = useState<FactResponse | null>(null);
-  const [cachedFact, setCachedFact] = useState<CachedFact | null>(null);
+  const cacheKey = "movie-memory:fact:" + userId;
   const [factLoading, setFactLoading] = useState(true);
   const [factError, setFactError] = useState("");
 
   const loadFact = useCallback(async (forceNew = false) => {
-    if (!forceNew && cachedFact && Date.now() - cachedFact.cachedAt < FACT_CACHE_MS) {
-      setFact(cachedFact.value);
-      setFactError("");
-      setFactLoading(false);
-      return;
+    if (!forceNew) {
+      const cached = readFactCache(cacheKey);
+      if (cached) {
+        setFact(cached.value);
+        setFactError("");
+        setFactLoading(false);
+        return;
+      }
     }
+
     setFactLoading(true);
     setFactError("");
     try {
       const result = await getFact();
-      setCachedFact({ value: result, cachedAt: Date.now() });
+      writeFactCache(cacheKey, { value: result, cachedAt: Date.now() });
       setFact(result);
     } catch (error) {
       setFactError(error instanceof ApiError ? error.message : "Could not load a movie fact.");
     } finally {
       setFactLoading(false);
     }
-  }, [cachedFact]);
+  }, [cacheKey]);
 
   useEffect(() => { void loadFact(); }, [loadFact]);
 
@@ -53,7 +75,7 @@ export function DashboardClient({ name, email, image, initialMovie }: Props) {
         setFavoriteMovie
       );
       setEditing(false);
-      setCachedFact(null);
+      try { sessionStorage.removeItem(cacheKey); } catch { /* Storage may be disabled. */ }
       setFact(null);
       setFactError("");
       await loadFact(true);
