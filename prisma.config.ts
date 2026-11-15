@@ -7,6 +7,7 @@ export default defineConfig({
     path: "prisma/migrations"
   },
   datasource: {
-    url: env("DATABASE_URL")
+    // Prisma CLI commands and migrations should use Neon's direct connection.
+    url: env("DIRECT_URL")
   }
 });
