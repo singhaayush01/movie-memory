@@ -1,11 +1,10 @@
-import { getServerSession } from "next-auth";
+import { auth } from "@/lib/auth";
 import { redirect } from "next/navigation";
-import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { LandingSignIn } from "@/components/landing-sign-in";
 
 export default async function HomePage() {
-  const session = await getServerSession(authOptions);
+  const session = await auth();
   if (session?.user?.id) {
     const user = await prisma.user.findUnique({ where: { id: session.user.id }, select: { favoriteMovie: true } });
     redirect(user?.favoriteMovie ? "/dashboard" : "/onboarding");
