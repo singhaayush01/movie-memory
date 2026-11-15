@@ -1,3 +1,4 @@
+import Link from "next/link";
 "use client";
 
 import Image from "next/image";
@@ -109,7 +110,7 @@ export function DashboardClient({ userId, name, email, image, initialMovie }: Pr
   return (
     <main className="min-h-screen px-6 py-8 sm:px-10">
       <nav className="mx-auto flex max-w-6xl items-center justify-between">
-        <a href="/" className="text-sm font-bold">movie memory<span className="text-lime-600">.</span></a>
+        <Link href="/" className="text-sm font-bold">movie memory<span className="text-lime-600">.</span></Link>
         <button onClick={() => void signOut({ redirectTo: "/" })} className="rounded-full border border-line px-5 py-2.5 text-xs font-semibold hover:bg-white">Sign out</button>
       </nav>
       <div className="mx-auto max-w-6xl pb-16 pt-16">
