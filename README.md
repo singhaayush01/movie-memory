@@ -121,7 +121,7 @@ PostgreSQL <---------+
 
 ### Authentication and user data
 
-NextAuth handles Google OAuth and uses the Prisma adapter to save the user, linked Google account, and database session. Protected pages and API routes call `getServerSession` before reading or changing user data.
+NextAuth handles Google OAuth and uses the Prisma adapter to save the user, linked Google account, and database session. Protected pages and API routes call Auth.js `auth()` before reading or changing user data.
 
 The `User` record contains the user's `favoriteMovie`. The `Fact` table stores generated facts with the owning user ID and the movie title used to generate each fact. A fact is always created with the authenticated session's user ID; the API does not accept a user ID from the browser.
 
@@ -155,7 +155,7 @@ I chose Variant B because it puts the focus on the API contract and how the fron
 - **Fact cache:** the dashboard keeps the last fact and the time it was received in React state. A fact is reused for 30 seconds. The "Give me another fact" button bypasses that cache.
 - **Cache invalidation:** after a movie update succeeds, the old fact and its timestamp are cleared so the next fact is about the updated movie.
 
-The cache is intentionally scoped to the current browser tab and user. It is cleared after the movie is changed, and a new fact request bypasses it. This keeps the implementation small without adding a data-fetching library.
+The cache is intentionally scoped to the current browser tab and user. It is only reused when it belongs to the currently saved movie, is less than 30 seconds old, and has a valid timestamp. It is cleared after the movie is changed, and a new fact request bypasses it. A request counter also prevents an older fact response from replacing the result for a newer movie.
 
 ## Security and Validation
 
@@ -191,6 +191,6 @@ npm run typecheck
 
 ## Tradeoffs and Next Steps
 
-I kept the app to one saved favorite movie per user and a small dashboard. The client cache uses React state instead of adding a data-fetching library because the cache requirement is only one value with a short time window.
+I kept the app to one saved favorite movie per user and a small dashboard. The client cache uses session storage instead of adding a data-fetching library because the cache requirement is only one value with a short time window.
 
 With two more hours, I would add stronger end-to-end tests for the Google sign-in and onboarding flow, improve the fact-generation failure experience by showing the last saved fact, and add a small deployment guide for a hosted PostgreSQL database and Vercel.
