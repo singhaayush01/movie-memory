@@ -1,5 +1,9 @@
 name: Checks
 
+concurrency:
+  group: checks-${{ github.workflow }}-${{ github.event.pull_request.head.ref || github.ref }}
+  cancel-in-progress: true
+
 on:
   push:
     branches:
@@ -10,6 +14,7 @@ on:
 
 jobs:
   checks:
+    timeout-minutes: 10
     runs-on: ubuntu-latest
     env:
       DATABASE_URL: postgresql://postgres:postgres@localhost:5432/movie_memory?schema=public
