@@ -11,5 +11,5 @@ export default async function DashboardPage() {
     select: { name: true, email: true, image: true, favoriteMovie: true }
   });
   if (!user?.favoriteMovie) redirect("/onboarding");
-  return <DashboardClient name={user.name} email={user.email} image={user.image} initialMovie={user.favoriteMovie} />;
+  return <DashboardClient userId={session.user.id} name={user.name} email={user.email} image={user.image} initialMovie={user.favoriteMovie} />;
 }
