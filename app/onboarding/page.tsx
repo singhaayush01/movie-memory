@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { auth } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
@@ -12,7 +13,7 @@ export default async function OnboardingPage() {
   return (
     <main className="min-h-screen px-6 py-10 sm:px-10">
       <div className="mx-auto max-w-3xl">
-        <a href="/" className="text-sm font-bold">movie memory<span className="text-lime-600">.</span></a>
+        <Link href="/" className="text-sm font-bold">movie memory<span className="text-lime-600">.</span></Link>
         <div className="mt-24 max-w-2xl">
           <p className="text-xs font-semibold uppercase tracking-[.2em] text-muted">First, the important question</p>
           <h1 className="mt-5 text-5xl font-semibold leading-tight tracking-[-.05em] sm:text-6xl">What is your all-time favorite movie?</h1>
