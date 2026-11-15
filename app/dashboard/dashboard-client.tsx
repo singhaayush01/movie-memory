@@ -74,7 +74,7 @@ export function DashboardClient({ name, email, image, initialMovie }: Props) {
     <main className="min-h-screen px-6 py-8 sm:px-10">
       <nav className="mx-auto flex max-w-6xl items-center justify-between">
         <a href="/" className="text-sm font-bold">movie memory<span className="text-lime-600">.</span></a>
-        <button onClick={() => void signOut({ callbackUrl: "/" })} className="rounded-full border border-line px-5 py-2.5 text-xs font-semibold hover:bg-white">Sign out</button>
+        <button onClick={() => void signOut({ redirectTo: "/" })} className="rounded-full border border-line px-5 py-2.5 text-xs font-semibold hover:bg-white">Sign out</button>
       </nav>
       <div className="mx-auto max-w-6xl pb-16 pt-16">
         <div className="flex flex-col justify-between gap-8 border-b border-line pb-10 sm:flex-row sm:items-end">
