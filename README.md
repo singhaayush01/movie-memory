@@ -53,7 +53,7 @@ Fill in the values:
 
 | Variable | Purpose |
 |---|---|
-| `DATABASE_URL` | PostgreSQL connection string |
+| `DATABASE_URL` | Pooled PostgreSQL connection string used by the app |\n| `DIRECT_URL` | Direct, non-pooled PostgreSQL connection string used by Prisma migrations |
 | `GOOGLE_CLIENT_ID` | Google OAuth client ID |
 | `GOOGLE_CLIENT_SECRET` | Google OAuth client secret |
 | `AUTH_SECRET` | Secret used to sign/encrypt Auth.js data |
@@ -79,7 +79,7 @@ Copy the client ID and client secret into `.env`.
 
 Create a PostgreSQL database with your provider (for example, a local Postgres instance or a hosted Postgres database).
 
-Add its connection string as `DATABASE_URL`, then run:
+Add the pooled connection string as `DATABASE_URL` and the direct (non-pooled) connection string as `DIRECT_URL`, then run:
 
 ```bash
 npx prisma generate
