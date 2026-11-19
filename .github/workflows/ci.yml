@@ -18,6 +18,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       DATABASE_URL: postgresql://postgres:postgres@localhost:5432/movie_memory?schema=public
+      DIRECT_URL: postgresql://postgres:postgres@localhost:5432/movie_memory?schema=public
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
