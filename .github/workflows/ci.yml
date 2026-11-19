@@ -1,0 +1,44 @@
+name: Checks
+
+concurrency:
+  group: checks-${{ github.workflow }}-${{ github.event.pull_request.head.ref || github.ref }}
+  cancel-in-progress: true
+
+on:
+  push:
+    branches:
+      - variant-b-implementation
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  checks:
+    timeout-minutes: 10
+    runs-on: ubuntu-latest
+    env:
+      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/movie_memory?schema=public
+      DIRECT_URL: postgresql://postgres:postgres@localhost:5432/movie_memory?schema=public
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Generate Prisma Client
+        run: npx prisma generate
+
+      - name: Check TypeScript
+        run: npm run typecheck
+
+      - name: Run tests
+        run: npm test
+
+      - name: Run ESLint
+        run: npm run lint
